@@ -6,6 +6,12 @@ pub mod lab2;
 use std::env;
 use std::sync::atomic::Ordering;
 
+use crate::lab2::declarations::SCRIPT_GEN_FAILURE;
+use crate::lab2::declarations::SHOULD_COMPLAIN;
+use crate::lab2::play::Play;
+
+
+
 const MIN_ARGS:usize = 2;
 const MAX_ARGS:usize = 3;
 
@@ -22,16 +28,14 @@ fn main() ->  Result<(), u8> {
         return Err(FIX_COMMAND_LINE);
     }
 
+    let mut play_struct:Play = Play::new();
     let mut play_name:String = String::new();
-    let mut play:Play = Vec::new();
 
-    if let Err(_e) = script_gen(&config_filename, &mut play_name, &mut play){
+    if let Err(_e) = play_struct.prepare(&config_filename, &mut play_name){
         return Err(SCRIPT_GEN_FAILURE);
     }
-    
-    play.sort(); //order lines
 
-    recite(&play_name,&play);
+    play_struct.recite();
 
     return Ok(());
 }
@@ -67,28 +71,28 @@ fn parse_args(config_filename:&mut String) -> Result<(), u8>{
     Ok(())
 }
 
-fn recite(play_title:&String, the_play:&Play){
-    println!("{}",play_title);
+// fn recite(play_title:&String, the_play:&Play){
+//     println!("{}",play_title);
 
-    let mut character_name:String = " ".to_string();
+//     let mut character_name:String = " ".to_string();
 
-    for performance in the_play {
+//     for performance in the_play {
 
-     match performance {
-       (.., character_name_temp, line) => {
+//      match performance {
+//        (.., character_name_temp, line) => {
  
-        if character_name != *character_name_temp {   
-            println!("");
+//         if character_name != *character_name_temp {   
+//             println!("");
 
-              // just print out the new character's name
-              println!("{}.", character_name_temp);
-        }
+//               // just print out the new character's name
+//               println!("{}.", character_name_temp);
+//         }
         
-        println!("{}",line);
-        character_name = character_name_temp.clone();
+//         println!("{}",line);
+//         character_name = character_name_temp.clone();
 
-       }
-     }
+//        }
+//      }
 
-    }
-}
+//     }
+// }
