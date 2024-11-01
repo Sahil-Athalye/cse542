@@ -8,6 +8,8 @@ use std::sync::atomic::Ordering;
 use crate::lab2::declarations::SCRIPT_GEN_FAILURE;
 use crate::lab2::declarations::SHOULD_COMPLAIN;
 
+use std::cmp::Ordering as CmpOrdering;
+
 const MIN_LINE_LEN:usize = 1;
 
 // pub type Play = Vec<(usize, String, String)>;
@@ -17,9 +19,9 @@ pub type PlayLines = Vec<(usize, String)>;
 
 #[derive(Debug)]
 pub struct Player{
-    name:String,
-    lines:PlayLines,
-    cur_idx:usize,
+    pub name:String,
+    pub lines:PlayLines,
+    pub cur_idx:usize,
 }
 
 impl Player{
@@ -94,4 +96,43 @@ impl Player{
         }
     }
 
+}
+
+impl PartialEq for Player {
+    fn eq(&self, other: &Self) -> bool {
+        match (self.lines.get(0), other.lines.get(0)) {
+            // Both players have no lines (both are silent)
+            (None, None) => true,
+            // One has lines while other doesn't, so not equal
+            (Some(_), None) | (None, Some(_)) => false,
+            // Both have lines, compare their first line numbers
+            (Some((self_num, _)), Some((other_num, _))) => self_num == other_num,
+        }
+    }
+}
+
+// Implementing Eq is required for Ord
+// Since we have a sound PartialEq implementation that is reflexive, symmetric, and transitive,
+// we can safely implement Eq
+impl Eq for Player {}
+
+impl PartialOrd for Player {
+    fn partial_cmp(&self, other: &Self) -> Option<CmpOrdering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for Player {
+    fn cmp(&self, other: &Self) -> CmpOrdering {
+        match (self.lines.get(0), other.lines.get(0)) {
+            // Both have no lines - they're equal
+            (None, None) => CmpOrdering::Equal,
+            // If self has no lines and other has lines, self is less
+            (None, Some(_)) => CmpOrdering::Less,
+            // If self has lines and other has none, self is greater
+            (Some(_), None) => CmpOrdering::Greater,
+            // Both have lines, compare their first line numbers
+            (Some((self_num, _)), Some((other_num, _))) => self_num.cmp(other_num),
+        }
+    }
 }

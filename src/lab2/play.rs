@@ -8,7 +8,10 @@ use crate::lab2::declarations::SCRIPT_GEN_FAILURE;
 use crate::lab2::declarations::SHOULD_COMPLAIN;
 use crate::lab2::player::Player;
 
-type PlayConfig = Vec<(String, String)>;
+use super::scene_fragment::SceneFragment;
+
+type ScriptConfig = Vec<(bool, String)>;
+type Fragments = Vec<SceneFragment>;
 
 const CONFIG_TITLE_INDEX:usize = 0;
 const CONFIG_CHAR_INDEX:usize = 1;
@@ -20,141 +23,170 @@ const CONFIG_TOKEN_NUM:usize = 2;
 
 #[derive(Debug)]
 pub struct Play{
-    scene_title:String,
-    characters:Vec<Player>
+    fragments:Fragments,
 }
 
 impl Play{
     pub fn new() -> Self {
-        let title:String = "".to_string();
-        let players:Vec<Player> = Vec::new();
-        Self { scene_title:title, characters:players}
+        let fragments:Fragments = Vec::new();
+        return Self { fragments};
     }
 
-    pub fn process_config(&mut self, play_config: &PlayConfig) -> Result<(), u8> {
-        for (character_name, file_name) in play_config {
-            // Create a new Player instance with the character name.
-            let mut player = Player::new(character_name.clone());
-
-            // Attempt to prepare the player with the part file name.
-            if let Err(error) = player.prepare(file_name) {
-                return Err(error); // Return error if prepare fails.
-            }
-
-            // Add the prepared player to the Play's characters.
-            self.characters.push(player);
-        }
+    pub fn process_config(&mut self, play_config: &ScriptConfig) -> Result<(), u8> {
+        let mut current_title = String::new();
         
+        for (is_title, text) in play_config {
+            if *is_title {
+                // Update the current title if this is a scene title
+                current_title = text.clone();
+            } else {
+                // Create new fragment with current title
+                let mut fragment = SceneFragment::new(&current_title);
+                
+                // Pass the config file text to prepare method
+                match fragment.prepare(text,&mut current_title) {
+                    Ok(_) => {
+                        self.fragments.push(fragment);
+                        current_title = String::new(); // Reset title after fragment creation
+                    },
+                    Err(_) => return Err(1) // Return error if script generation failed
+                }
+            }
+        }
         Ok(())
     }
 
-    fn add_config(config_line:&String, play_config:&mut PlayConfig){
-        let whitespace_tokens:Vec<&str> = (config_line.split_whitespace()).collect(); //split config lines into their two strings
-    
-        if whitespace_tokens.len() < CONFIG_TOKEN_NUM {
-            if SHOULD_COMPLAIN.load(Ordering::SeqCst){
-                eprintln!("Less than two tokens in config line {}",config_line);
-            }
+    fn add_config(config_line: &String, play_config: &mut ScriptConfig) {
+        // Skip blank lines
+        if config_line.trim().is_empty() {
+            return;
         }
     
-        if whitespace_tokens.len() > CONFIG_TOKEN_NUM {
-            if SHOULD_COMPLAIN.load(Ordering::SeqCst){
-                eprintln!("More than two tokens in config line {}",config_line);
-            }
+        let tokens: Vec<&str> = config_line.split_whitespace().collect();
+        
+        // Skip empty token lists (shouldn't happen with trim but being defensive)
+        if tokens.is_empty() {
+            return;
         }
     
-        if whitespace_tokens.len() >= CONFIG_TOKEN_NUM { 
-            play_config.push((whitespace_tokens[CHAR_NAME_INDEX].to_string(),whitespace_tokens[FILE_NAME_INDEX].to_string()));
-        }
-    }
-
-    fn read_config(config_name:&String, play_title:&mut String, play_config:&mut PlayConfig) -> Result<(), u8>{
-        let mut lines_read:Vec<String> = Vec::new();
-        if let Err(_e) =  grab_trimmed_file_lines(&config_name, &mut lines_read){
-            return Err(SCRIPT_GEN_FAILURE);
-        }
-    
-        if lines_read.len() < CONFIG_LINE_NUM {
-            return Err(SCRIPT_GEN_FAILURE);
-        }
-        else{
-            let mut i = CONFIG_TITLE_INDEX;
-            for line in lines_read{
-                if i == CONFIG_TITLE_INDEX{//if we are reading the play title
-                    *play_title = line.clone().to_string();
+        // Handle [scene] directives
+        if tokens[0] == "[scene]" {
+            if tokens.len() == 1 {
+                // [scene] with no title
+                if SHOULD_COMPLAIN.load(Ordering::SeqCst) {
+                    eprintln!("Missing scene title after [scene]");
                 }
-                else{
-                    Self::add_config(&line,play_config);
-                }   
-                i+=CONFIG_CHAR_INDEX;
+                return;
             }
+            // Concatenate remaining tokens as scene title
+            let scene_title = tokens[1..].join(" ");
+            play_config.push((true, scene_title));
+            return;
         }
-        return Ok(());
+    
+        // Handle configuration file lines
+        let config_file = tokens[0].to_string();
+        if tokens.len() > 1 && SHOULD_COMPLAIN.load(Ordering::SeqCst) {
+            eprintln!("Additional tokens after configuration file name: {}", config_line);
+        }
+        play_config.push((false, config_file));
     }
 
-    pub fn prepare(&mut self, config_name: &String, play_name: &mut String) -> Result<(), u8> {
-        // Initialize an empty PlayConfig.
-        let mut play_config: PlayConfig = PlayConfig::new();
-
-        // Read the configuration file and populate play_name and play_config.
-        if let Err(_e) = Self::read_config(config_name, play_name, &mut play_config) {
+    fn read_config(script_name: &String, play_config: &mut ScriptConfig) -> Result<(), u8> {
+        let mut lines_read: Vec<String> = Vec::new();
+        
+        // Attempt to read lines from the script file
+        if let Err(_e) = grab_trimmed_file_lines(script_name, &mut lines_read) {
+            eprintln!("Failed to open or read from script file: {}", script_name);
             return Err(SCRIPT_GEN_FAILURE);
         }
-
-        // Process the configuration to set up the play.
-        if let Err(_e) = self.process_config(&play_config) {
+    
+        // Check if any lines were read
+        if lines_read.is_empty() {
+            eprintln!("No lines read from script file: {}", script_name);
             return Err(SCRIPT_GEN_FAILURE);
         }
+    
+        // Process each line using add_config
+        for line in lines_read {
+            Self::add_config(&line, play_config);
+        }
+    
+        Ok(())
+    }
 
+    pub fn prepare(&mut self, script_name: &String) -> Result<(), u8> {
+        // Create a new empty ScriptConfig
+        let mut script_config: ScriptConfig = ScriptConfig::new();
+    
+        // Read and process the configuration using the new read_config signature
+        if let Err(_e) = Self::read_config(script_name, &mut script_config) {
+            return Err(SCRIPT_GEN_FAILURE);
+        }
+    
+        // Process the configuration to set up the play
+        if let Err(_e) = self.process_config(&script_config) {
+            return Err(SCRIPT_GEN_FAILURE);
+        }
+    
+        // Validate that we have fragments and the first fragment has a title
+        if self.fragments.is_empty() {
+            eprintln!("No scene fragments were created from script file: {}", script_name);
+            return Err(SCRIPT_GEN_FAILURE);
+        }
+    
+        // Check if the first fragment has a title
+        if !self.fragments.first().map_or(false, |f| !f.scene_title.is_empty()) {
+            eprintln!("First scene fragment is missing a title in script file: {}", script_name);
+            return Err(SCRIPT_GEN_FAILURE);
+        }
+    
         Ok(())
     }
 
     pub fn recite(&mut self) {
-        // Print the title of the play.
-        println!("{}", self.scene_title);
-
-        let mut current_character = String::new();
-        let mut expected_line_number = 0;
-
-        loop {
-            // Find the next player with the lowest line number to speak.
-            let mut next_player: Option<&mut Player> = None;
-            let mut next_line_number = usize::MAX;
-
-            for player in &mut self.characters {
-                if let Some(line_number) = player.next_line() {
-                    // Check for the lowest line number in the players.
-                    if line_number < next_line_number {
-                        next_player = Some(player);
-                        next_line_number = line_number;
-                    }
-                }
+        // Do nothing if there are no fragments
+        if self.fragments.is_empty() {
+            return;
+        }
+    
+        let last_index = self.fragments.len() - 1;
+    
+        for i in 0..=last_index {
+            if i == 0 {
+                // First fragment: use enter_all
+                self.fragments[0].enter_all();
+            } else {
+                // Get indices for splitting the vector
+                let (prev_idx, curr_idx) = (i - 1, i);
+                
+                // Split the vector at current index to get both mutable and immutable references
+                let (left, right) = self.fragments.split_at_mut(curr_idx);
+                let prev_fragment = &left[prev_idx];
+                let current_fragment = &mut right[0];
+                
+                // Other fragments: use enter with previous fragment reference
+                current_fragment.enter(prev_fragment);
             }
-
-            // If no player has a next line, we are done reciting.
-            if next_player.is_none() {
-                break;
+    
+            // Recite the current fragment
+            self.fragments[i].recite();
+    
+            if i == last_index {
+                // Last fragment: use exit_all
+                self.fragments[i].exit_all();
+            } else {
+                // Get indices for splitting the vector
+                let (curr_idx, next_idx) = (i, i + 1);
+                
+                // Split the vector at next index to get both mutable and immutable references
+                let (left, right) = self.fragments.split_at_mut(next_idx);
+                let current_fragment = &mut left[curr_idx];
+                let next_fragment = &right[0];
+                
+                // Other fragments: use exit with next fragment reference
+                current_fragment.exit(next_fragment);
             }
-
-            // Handle missing lines if `SHOULD_COMPLAIN` mode is on.
-            if next_line_number > expected_line_number {
-                if SHOULD_COMPLAIN.load(Ordering::SeqCst) {
-                    for missing_line in expected_line_number..next_line_number {
-                        eprintln!("Warning: Missing line number {}", missing_line);
-                    }
-                }
-            } else if next_line_number < expected_line_number && SHOULD_COMPLAIN.load(Ordering::SeqCst) {
-                // Complain about duplicate line numbers if they are lower than expected.
-                eprintln!("Warning: Duplicate line number {}", next_line_number);
-            }
-
-            // Have the selected player speak their next line, updating the current character's name.
-            if let Some(player) = next_player {
-                player.speak(&mut current_character);
-            }
-
-            // Update the expected line number to the next one.
-            expected_line_number = next_line_number + 1;
         }
     }
 

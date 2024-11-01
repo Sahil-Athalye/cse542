@@ -6,9 +6,12 @@ pub mod lab2;
 use std::env;
 use std::sync::atomic::Ordering;
 
+use lab2::play::Play;
+
 use crate::lab2::declarations::SCRIPT_GEN_FAILURE;
 use crate::lab2::declarations::SHOULD_COMPLAIN;
-use crate::lab2::play::Play;
+use crate::lab2::scene_fragment::SceneFragment;
+use crate::lab2::return_wrapper::ReturnWrapper;
 
 
 
@@ -21,23 +24,24 @@ const OPTIONALARG_POSITION:usize = 2;
 
 const FIX_COMMAND_LINE:u8 = 1;
 
-fn main() ->  Result<(), u8> {
+fn main() ->  ReturnWrapper {
     let mut config_filename:String = String::new();
 
     if let Err(_e) = parse_args(&mut config_filename){
-        return Err(FIX_COMMAND_LINE);
+        return ReturnWrapper::new(FIX_COMMAND_LINE);
     }
-
+    
     let mut play_struct:Play = Play::new();
-    let mut play_name:String = String::new();
+    // let mut play_name:String = String::new();
 
-    if let Err(_e) = play_struct.prepare(&config_filename, &mut play_name){
-        return Err(SCRIPT_GEN_FAILURE);
+
+    if let Err(_e) = play_struct.prepare(&config_filename){
+        return ReturnWrapper::new(SCRIPT_GEN_FAILURE);
     }
 
     play_struct.recite();
 
-    return Ok(());
+    return ReturnWrapper::new(0);
 }
 
 fn usage(program_name: &String){
