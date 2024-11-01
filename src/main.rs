@@ -24,6 +24,8 @@ const OPTIONALARG_POSITION:usize = 2;
 
 const FIX_COMMAND_LINE:u8 = 1;
 
+const SUCCESS_CODE:u8 = 0;
+
 fn main() ->  ReturnWrapper {
     let mut config_filename:String = String::new();
 
@@ -41,7 +43,7 @@ fn main() ->  ReturnWrapper {
 
     play_struct.recite();
 
-    return ReturnWrapper::new(0);
+    return ReturnWrapper::new(SUCCESS_CODE);
 }
 
 fn usage(program_name: &String){

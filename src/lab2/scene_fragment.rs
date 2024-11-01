@@ -188,7 +188,6 @@ impl SceneFragment{
     }
 
     pub fn exit(&self, next: &SceneFragment) {
-        self.print_title_if_nonempty();
 
         // Iterate through characters in reverse order
         for current_player in self.characters.iter().rev() {
@@ -201,8 +200,6 @@ impl SceneFragment{
 
 
     pub fn exit_all(&self) {
-    self.print_title_if_nonempty();
-
     // Iterate through characters in reverse order
     for player in self.characters.iter().rev() {
         println!("[Exit {}.]", player.name);
