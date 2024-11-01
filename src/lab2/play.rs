@@ -6,7 +6,6 @@ use std::sync::atomic::Ordering;
 use crate::lab2::script_gen::grab_trimmed_file_lines;
 use crate::lab2::declarations::SCRIPT_GEN_FAILURE;
 use crate::lab2::declarations::SHOULD_COMPLAIN;
-use crate::lab2::player::Player;
 
 use super::scene_fragment::SceneFragment;
 

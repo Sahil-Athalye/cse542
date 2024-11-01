@@ -56,7 +56,7 @@ impl SceneFragment{
 
     fn add_config(config_line:&String, play_config:&mut PlayConfig){
         let whitespace_tokens:Vec<&str> = (config_line.split_whitespace()).collect(); //split config lines into their two strings
-        println!("{}",&config_line);
+
         if whitespace_tokens.len() < CONFIG_TOKEN_NUM {
             if SHOULD_COMPLAIN.load(Ordering::SeqCst){
                 eprintln!("Less than two tokens in config line {}",config_line);
@@ -79,19 +79,22 @@ impl SceneFragment{
         if let Err(_e) =  grab_trimmed_file_lines(&config_name, &mut lines_read){
             return Err(SCRIPT_GEN_FAILURE);
         }
+
         if lines_read.len() < CONFIG_LINE_NUM {
             return Err(SCRIPT_GEN_FAILURE);
         }
         else{
             let mut i = CONFIG_TITLE_INDEX;
             for line in lines_read{
-                if i == CONFIG_TITLE_INDEX{//if we are reading the play title
-                    *play_title = line.clone().to_string();
-                }
-                else{
-                    Self::add_config(&line,play_config);
-                }   
-                i+=CONFIG_CHAR_INDEX;
+                // if i == CONFIG_TITLE_INDEX{//if we are reading the play title
+                //     *play_title = line.clone().to_string();
+                // }
+                // else{
+                //     Self::add_config(&line,play_config);
+                // }   
+                // i+=CONFIG_CHAR_INDEX;
+                Self::add_config(&line,play_config);
+
             }
         }
         return Ok(());
@@ -118,8 +121,6 @@ impl SceneFragment{
     }
 
     pub fn recite(&mut self) {
-        // Print the title of the play.
-        self.print_title_if_nonempty();
 
         let mut current_character = String::new();
         let mut expected_line_number = 0;
