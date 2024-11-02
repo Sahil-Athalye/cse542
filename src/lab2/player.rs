@@ -1,7 +1,7 @@
 //player.rs
-//Sahil Athalye: a.sahil@wustl.edu
-//DESCRIPTION
-
+//Sahil Athalye: a.sahil@wustl.edu 
+//Varad Deouskar: varad@wustl.edu
+//declares and implements the player struct which handles the individual speakers
 
 use crate::lab2::script_gen::grab_trimmed_file_lines;
 use std::sync::atomic::Ordering;
@@ -11,8 +11,6 @@ use crate::lab2::declarations::SHOULD_COMPLAIN;
 use std::cmp::Ordering as CmpOrdering;
 
 const MIN_LINE_LEN:usize = 1;
-
-// pub type Play = Vec<(usize, String, String)>;
 
 //usize for line number and String for line itself
 pub type PlayLines = Vec<(usize, String)>;

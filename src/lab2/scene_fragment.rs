@@ -1,6 +1,7 @@
-//play.rs
-//Sahil Athalye: a.sahil@wustl.edu
-//DESCRIPTION
+//scene_fragment.rs
+//Sahil Athalye: a.sahil@wustl.edu 
+//Varad Deouskar: varad@wustl.edu
+//Implements SceneFragment which handles each fragment of a play.
 
 use std::sync::atomic::Ordering;
 use crate::lab2::script_gen::grab_trimmed_file_lines;
@@ -10,8 +11,6 @@ use crate::lab2::player::Player;
 
 type PlayConfig = Vec<(String, String)>;
 
-const CONFIG_TITLE_INDEX:usize = 0;
-const CONFIG_CHAR_INDEX:usize = 1;
 const CONFIG_LINE_NUM:usize = 2;
 
 const CHAR_NAME_INDEX:usize = 0;
@@ -74,8 +73,9 @@ impl SceneFragment{
         }
     }
 
-    fn read_config(config_name:&String, play_title:&mut String, play_config:&mut PlayConfig) -> Result<(), u8>{
+    fn read_config(config_name:&String, _play_title:&mut String, play_config:&mut PlayConfig) -> Result<(), u8>{
         let mut lines_read:Vec<String> = Vec::new();
+
         if let Err(_e) =  grab_trimmed_file_lines(&config_name, &mut lines_read){
             return Err(SCRIPT_GEN_FAILURE);
         }
@@ -84,15 +84,7 @@ impl SceneFragment{
             return Err(SCRIPT_GEN_FAILURE);
         }
         else{
-            let mut i = CONFIG_TITLE_INDEX;
             for line in lines_read{
-                // if i == CONFIG_TITLE_INDEX{//if we are reading the play title
-                //     *play_title = line.clone().to_string();
-                // }
-                // else{
-                //     Self::add_config(&line,play_config);
-                // }   
-                // i+=CONFIG_CHAR_INDEX;
                 Self::add_config(&line,play_config);
 
             }

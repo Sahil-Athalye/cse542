@@ -1,21 +1,13 @@
 //script_gen.rs
-//Sahil Athalye: a.sahil@wustl.edu
-//declares PlayConfig type, additional constants, and functions to read and process the configuration file to generate the script
+//Sahil Athalye: a.sahil@wustl.edu 
+//Varad Deouskar: varad@wustl.edu
+//Implements the grab trimmed file lines function
 
 use std::fs::File;
 use std::io::BufReader;
 use std::io::BufRead;
 
 use crate::lab2::declarations::SCRIPT_GEN_FAILURE;
-
-
-
-
-
-
-
-
-
 
 const DONE_READING:usize = 0;
 
@@ -48,24 +40,3 @@ pub fn grab_trimmed_file_lines(file_name:&String,lines:&mut Vec<String>) -> Resu
         }
     };
 }
-
-
-
-
-
-// pub fn script_gen( config_name:&String, play_name:&mut String, the_play:&mut Play) -> Result<(), u8>{
-
-//     let mut play_config:PlayConfig = PlayConfig::new();
-//     if let Err(_e) = read_config(&config_name, play_name,&mut play_config){
-//         return Err(SCRIPT_GEN_FAILURE);
-//     }
-
-//     if let Err(_e) = process_config(the_play,&play_config){
-//         return Err(SCRIPT_GEN_FAILURE);
-//     }
-
-//     return Ok(());
-// }
-
-
-

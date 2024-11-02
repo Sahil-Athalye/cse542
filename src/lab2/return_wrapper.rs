@@ -1,3 +1,8 @@
+//return_wrapper.rs
+//Sahil Athalye: a.sahil@wustl.edu 
+//Varad Deouskar: varad@wustl.edu
+//Implemented the return wrapper which is used to handle return codes.
+
 use std::process::{ExitCode,Termination};
 
 

@@ -1,6 +1,7 @@
 //play.rs
-//Sahil Athalye: a.sahil@wustl.edu
-//DESCRIPTION
+//Sahil Athalye: a.sahil@wustl.edu 
+//Varad Deouskar: varad@wustl.edu
+//declares and implements the Play struct which handles the partial config files
 
 use std::sync::atomic::Ordering;
 use crate::lab2::script_gen::grab_trimmed_file_lines;
@@ -12,13 +13,8 @@ use super::scene_fragment::SceneFragment;
 type ScriptConfig = Vec<(bool, String)>;
 type Fragments = Vec<SceneFragment>;
 
-const CONFIG_TITLE_INDEX:usize = 0;
-const CONFIG_CHAR_INDEX:usize = 1;
-const CONFIG_LINE_NUM:usize = 2;
+const ONE_TOKEN:usize = 1;
 
-const CHAR_NAME_INDEX:usize = 0;
-const FILE_NAME_INDEX:usize = 1;
-const CONFIG_TOKEN_NUM:usize = 2;
 
 #[derive(Debug)]
 pub struct Play{
@@ -70,7 +66,7 @@ impl Play{
     
         // Handle [scene] directives
         if tokens[0] == "[scene]" {
-            if tokens.len() == 1 {
+            if tokens.len() == ONE_TOKEN {
                 // [scene] with no title
                 if SHOULD_COMPLAIN.load(Ordering::SeqCst) {
                     eprintln!("Missing scene title after [scene]");
@@ -85,7 +81,7 @@ impl Play{
     
         // Handle configuration file lines
         let config_file = tokens[0].to_string();
-        if tokens.len() > 1 && SHOULD_COMPLAIN.load(Ordering::SeqCst) {
+        if tokens.len() > ONE_TOKEN && SHOULD_COMPLAIN.load(Ordering::SeqCst) {
             eprintln!("Additional tokens after configuration file name: {}", config_line);
         }
         play_config.push((false, config_file));

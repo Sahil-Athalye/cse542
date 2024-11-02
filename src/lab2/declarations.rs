@@ -1,5 +1,6 @@
 //declarations.rs
-//Sahil Athalye: a.sahil@wustl.edu
+//Sahil Athalye: a.sahil@wustl.edu 
+//Varad Deouskar: varad@wustl.edu
 //declares Play type, program constants, and whinge boolean
 
 use std::sync::atomic::AtomicBool;

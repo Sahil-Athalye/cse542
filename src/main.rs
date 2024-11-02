@@ -1,6 +1,7 @@
 //main.rs
 //Sahil Athalye: a.sahil@wustl.edu
-//Main Function: parses command line arguments, calls for script generation, and then recites script
+//Varad Deouskar: varad@wustl.edu
+//Main Function: parses command line arguments, calls for script preparation, and then recites script
 pub mod lab2;
 
 use std::env;
@@ -10,7 +11,6 @@ use lab2::play::Play;
 
 use crate::lab2::declarations::SCRIPT_GEN_FAILURE;
 use crate::lab2::declarations::SHOULD_COMPLAIN;
-use crate::lab2::scene_fragment::SceneFragment;
 use crate::lab2::return_wrapper::ReturnWrapper;
 
 
@@ -34,15 +34,16 @@ fn main() ->  ReturnWrapper {
     }
     
     let mut play_struct:Play = Play::new();
-    // let mut play_name:String = String::new();
 
-
+    //Preparing the play
     if let Err(_e) = play_struct.prepare(&config_filename){
         return ReturnWrapper::new(SCRIPT_GEN_FAILURE);
     }
 
+    //Reciting the play
     play_struct.recite();
 
+    //ReturnWrapper for success
     return ReturnWrapper::new(SUCCESS_CODE);
 }
 
@@ -76,29 +77,3 @@ fn parse_args(config_filename:&mut String) -> Result<(), u8>{
     *config_filename = cli_args[CONFIG_POSITION].clone();
     Ok(())
 }
-
-// fn recite(play_title:&String, the_play:&Play){
-//     println!("{}",play_title);
-
-//     let mut character_name:String = " ".to_string();
-
-//     for performance in the_play {
-
-//      match performance {
-//        (.., character_name_temp, line) => {
- 
-//         if character_name != *character_name_temp {   
-//             println!("");
-
-//               // just print out the new character's name
-//               println!("{}.", character_name_temp);
-//         }
-        
-//         println!("{}",line);
-//         character_name = character_name_temp.clone();
-
-//        }
-//      }
-
-//     }
-// }
