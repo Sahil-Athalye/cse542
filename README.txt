@@ -3,6 +3,7 @@
 2. Sahil Athalye: a.sahil@wustl.edu
 Varad Deouskar: varad@wustl.edu
 
+*****SECTION 1*****
 3. MODULES: 
     - Nearly all constant variable initializations in declarations.rs were moved to main.rs as most of them were exclusively used in main.rs. The Play type declaration, SCRIPT_GEN_FAILURE error code, and SHOULD_COMPLAIN atomic boolean were all declared public as they were used in multiple files.
 
@@ -48,6 +49,8 @@ Main challenges addressed:
     - Character continuity between scenes
     - Error handling in configuration and preparation
 
+*****TESTING*****
+
 Testing Approach
 The testing methodology was basically the same as lab 1.
 
@@ -61,12 +64,26 @@ Automation: Used shell scripts to automate testing with different inputs and cap
 
 Validation: Manually verified outputs against expected results, ensuring correct ordering and formatting.
 
+We added a number of lines between each character name/character file line to examine correct behavior. We included additional tokens on each line of the config file. We included fewer than two tokens on lines in the config file. We spelled file names incorrectly and moved files to various locations within the file tree. We included multiple lines with the same line number across a combination of different files. We provided file names that did not exist for both the outer and inner configuration file(s). We also passed file names in as the title of the play and tested with correctly formatted inputs.
+
+The current text files being submitted reflect several of these test cases combined, as we tested each case above individually and then created various case combinations from this testing set.
+
 Observations from Testing
 
-The program effectively handles various error conditions and warns of error when whinge is enabled.
+The program effectively handles various error conditions and warns of error when whinge is enabled. 
+
+*****SECTION 2: HOW TO RUN PROGRAM*****
+
+1. HOW TO UNZIP/UNPACK FILES: Unzip the .zip file and all the provided files will be in the lab1 folder. 
+
+2. HOW TO BUILD PROGRAM: Once inside the lab2 folder, "cargo build" will build the executable from the source code. The executable will then be found in the debug folder of the target folder. 
+
+3. HOW TO RUN PROGRAM: Once in the debug folder, you will find all the required text files, make sure all the inner config text files are in the same folder as the executable. The main config file titled "partial_hamlet_act_ii_script.txt" will be in the config folder, the path to this file will be a parameter when running the program. 
+
+Run the program as such: ./lab2 <config_file_path> <OPTIONAL: "whinge">.
 
 
-Output - 
+OUTPUT FROM SUBMITTED TEXT FILES: 
 [varad@archlinux debug]$ ./lab2 partial_hamlet_act_ii_script.txt whinge
 Hamlet Prince of Denmark ACT II Scene I A room in Polonius house by William Shakespeare
 [Enter Polonius.]
@@ -351,3 +368,20 @@ Ay, amen!
 [Exit Rosencrantz.]
 [Exit Queen.]
 [Exit King.]
+
+
+*****SECTION 3*****
+Initial Codebase Review: We began by examining the Lab 1 solution, focusing on the overall structure and functionality.
+Refactoring for Modularity: Key components, like file parsing, error handling, and data structures, were modularized to allow easy extension and improved reusability in Lab 2. This involved moving certain functionalities to dedicated modules, such as play.rs, player.rs, and scene_fragment.rs.
+Extension for Lab 2 Requirements: New functionalities were added to handle the Lab 2-specific requirements. This included expanding the script generation logic in script_gen.rs and implementing better error-handling structures in return_wrapper.rs.
+Testing Approach
+Script, Configuration, and Character Part Files:
+Well-Formed Files: These files contained correctly structured data, with expected delimiters, valid character names, and proper sequencing. These files served as the baseline to verify that the script generation and scene handling worked as expected.
+Badly Formed Files: We tested files with common issues, such as missing delimiters, incorrect character names, and out-of-sequence entries. This was essential for verifying the robustness of error handling and ensuring the program handled unexpected content gracefully.
+Edge Cases and Scenarios:
+Empty Files: We tested how the program managed files with no data, confirming that it generated appropriate warnings or errors.
+Duplicated Entries: We checked files with duplicate characters or scenes to observe if the program identified and handled redundancies.
+Unexpected EOF: We simulated files ending abruptly to verify that partial data didn’t lead to crashes and instead prompted controlled error messages.
+Testing Tools and Strategy
+Automated Tests: We built unit tests for individual modules (e.g., player.rs and scene_fragment.rs), which ensured functionality in isolation.
+Manual Testing: For a hands-on approach to error and boundary testing, we manually tested scenarios where syntax or data structure variations would stress the system.
